@@ -20,6 +20,8 @@ enum Part {
     Part2,
 }
 
+type ReturnType = u64;
+
 fn main() {
     let args = Args::parse();
 
@@ -33,8 +35,7 @@ fn main() {
     println!("{:?}", answer);
 }
 
-fn part_one(file: BufReader<File>) -> u64 {
-    // Parse into something usable
+fn parse_input(file: BufReader<File>) -> Vec<Vec<u32>> {
     let input: Vec<String> = file.lines().map(|x| x.unwrap()).collect();
     let mut elves: Vec<Vec<u32>> = Vec::new();
     let mut elf: Vec<u32> = Vec::new();
@@ -46,53 +47,28 @@ fn part_one(file: BufReader<File>) -> u64 {
             elf.push(line.parse().unwrap());
         }
     }
+    elves
 
+}
+
+fn part_one(file: BufReader<File>) -> ReturnType {
+    let elves = parse_input(file);
     part_one_internal(elves)
 }
 
-fn part_one_internal(input: Vec<Vec<u32>>) -> u64 {
+fn part_one_internal(input: Vec<Vec<u32>>) -> ReturnType {
     let val: f32 = input.into_iter().map(|elf| elf.into_iter().map(|x| x as f32).sum()).reduce(|greatest, val| if val > greatest { val } else {greatest}).unwrap();
     val as u64
 }
 
-fn part_two(file: BufReader<File>) -> u64 {
-    // Parse into something usable
-    let input: Vec<String> = file.lines().map(|x| x.unwrap()).collect();
-    let mut elves: Vec<Vec<u32>> = Vec::new();
-    let mut elf: Vec<u32> = Vec::new();
-    for line in input {
-        if line == "" {
-            elves.push(elf);
-            elf = Vec::new();
-        } else {
-            elf.push(line.parse().unwrap());
-        }
-    }
+fn part_two(file: BufReader<File>) -> ReturnType {
+    let elves = parse_input(file);
 
     part_two_internal(elves)
 }
 
-fn part_two_internal(input: Vec<Vec<u32>>) -> u64 {
+fn part_two_internal(input: Vec<Vec<u32>>) -> ReturnType {
     let mut calories: Vec<u64> = input.into_iter().map(|elf| elf.into_iter().map(|x| x as u64).sum()).collect();
     calories.sort();
     calories.into_iter().rev().take(3).sum()
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    fn part_one_input() -> () {}
-
-    #[test]
-    fn test_one() {
-        part_one_internal(part_one_input())
-    }
-
-    fn part_two_input() -> () {
-        part_two_internal(part_two_input())
-    }
-
-    #[test]
-    fn test_two() {}
 }
