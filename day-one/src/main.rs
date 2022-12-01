@@ -1,5 +1,5 @@
 //! Command line executable for running part one and part two
-use std::{fs::File, io::BufRead, io::BufReader};
+use std::{fs::File, io::{BufReader, BufRead}};
 
 use clap::Parser;
 
@@ -20,8 +20,6 @@ enum Part {
     Part2,
 }
 
-type ReturnType = u64;
-
 fn main() {
     let args = Args::parse();
 
@@ -35,12 +33,28 @@ fn main() {
     println!("{:?}", answer);
 }
 
-fn parse_input(file: BufReader<File>) -> Vec<Vec<u32>> {
+fn part_one(file: BufReader<File>) -> ReturnType {
+    let input = parse_input(file);
+    part_one_internal(input)
+}
+
+fn part_two(file: BufReader<File>) -> ReturnType {
+    let input = parse_input(file);
+    part_two_internal(input)
+}
+
+// TODO -- Update this with the return type
+type ReturnType = u64;
+type VectorType = Vec<u64>;
+
+
+// TODO Implement this
+fn parse_input(file: BufReader<File>) -> Vec<VectorType> {
     let input: Vec<String> = file.lines().map(|x| x.unwrap()).collect();
-    let mut elves: Vec<Vec<u32>> = Vec::new();
-    let mut elf: Vec<u32> = Vec::new();
+    let mut elves: Vec<VectorType> = Vec::new();
+    let mut elf: VectorType = Vec::new();
     for line in input {
-        if line == "" {
+        if line.is_empty() {
             elves.push(elf);
             elf = Vec::new();
         } else {
@@ -50,31 +64,29 @@ fn parse_input(file: BufReader<File>) -> Vec<Vec<u32>> {
     elves
 }
 
-fn part_one(file: BufReader<File>) -> ReturnType {
-    let elves = parse_input(file);
-    part_one_internal(elves)
-}
-
-fn part_one_internal(input: Vec<Vec<u32>>) -> ReturnType {
-    let val: f32 = input
+// TODO Implement this
+fn part_one_internal(input: Vec<VectorType>) -> ReturnType {
+    input
         .into_iter()
-        .map(|elf| elf.into_iter().map(|x| x as f32).sum())
+        .map(|elf| elf.into_iter().sum())
         .reduce(|greatest, val| if val > greatest { val } else { greatest })
-        .unwrap();
-    val as u64
+        .unwrap()
 }
 
-fn part_two(file: BufReader<File>) -> ReturnType {
-    let elves = parse_input(file);
-
-    part_two_internal(elves)
-}
-
-fn part_two_internal(input: Vec<Vec<u32>>) -> ReturnType {
-    let mut calories: Vec<u64> = input
+// TODO Implement this
+fn part_two_internal(input: Vec<VectorType>) -> ReturnType {
+    let mut calories: VectorType  = input
         .into_iter()
-        .map(|elf| elf.into_iter().map(|x| x as u64).sum())
-        .collect();
+        .map(|elf| elf.into_iter().sum()).collect();
     calories.sort();
     calories.into_iter().rev().take(3).sum()
+}
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn test_one() {}
+
+    #[test]
+    fn test_two() {}
 }

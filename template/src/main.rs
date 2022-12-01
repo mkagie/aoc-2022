@@ -1,5 +1,5 @@
 //! Command line executable for running part one and part two
-use std::{fs::File, io::BufReader};
+use std::{fs::File, io::{BufReader, BufRead}};
 
 use clap::Parser;
 
@@ -26,8 +26,8 @@ fn main() {
     let file = BufReader::new(File::open(args.input_file).expect("Cannot find file"));
 
     let answer = match args.part {
-        Part::Part1 => part_one(&file),
-        Part::Part2 => part_two(&file),
+        Part::Part1 => part_one(file),
+        Part::Part2 => part_two(file),
     };
 
     println!("{:?}", answer);
