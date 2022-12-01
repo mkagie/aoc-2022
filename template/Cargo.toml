@@ -1,6 +1,5 @@
 [package]
-# name = "{{project-name}}"
-name = "temp"
+name = "{{project-name}}"
 version = "0.1.0"
 edition = "2021"
 
@@ -8,5 +7,5 @@ edition = "2021"
 
 [dependencies]
 aoc_utils = { path = "../aoc_utils" }
-clap = "4.0.27"
+clap = { version = "4.0.27", features = ["derive"] }
 
