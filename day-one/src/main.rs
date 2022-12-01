@@ -1,5 +1,5 @@
 //! Command line executable for running part one and part two
-use std::{fs::File, io::BufReader, io::BufRead};
+use std::{fs::File, io::BufRead, io::BufReader};
 
 use clap::Parser;
 
@@ -48,7 +48,6 @@ fn parse_input(file: BufReader<File>) -> Vec<Vec<u32>> {
         }
     }
     elves
-
 }
 
 fn part_one(file: BufReader<File>) -> ReturnType {
@@ -57,7 +56,11 @@ fn part_one(file: BufReader<File>) -> ReturnType {
 }
 
 fn part_one_internal(input: Vec<Vec<u32>>) -> ReturnType {
-    let val: f32 = input.into_iter().map(|elf| elf.into_iter().map(|x| x as f32).sum()).reduce(|greatest, val| if val > greatest { val } else {greatest}).unwrap();
+    let val: f32 = input
+        .into_iter()
+        .map(|elf| elf.into_iter().map(|x| x as f32).sum())
+        .reduce(|greatest, val| if val > greatest { val } else { greatest })
+        .unwrap();
     val as u64
 }
 
@@ -68,7 +71,10 @@ fn part_two(file: BufReader<File>) -> ReturnType {
 }
 
 fn part_two_internal(input: Vec<Vec<u32>>) -> ReturnType {
-    let mut calories: Vec<u64> = input.into_iter().map(|elf| elf.into_iter().map(|x| x as u64).sum()).collect();
+    let mut calories: Vec<u64> = input
+        .into_iter()
+        .map(|elf| elf.into_iter().map(|x| x as u64).sum())
+        .collect();
     calories.sort();
     calories.into_iter().rev().take(3).sum()
 }
