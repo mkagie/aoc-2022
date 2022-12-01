@@ -2,6 +2,5 @@
 
 members = [
   "aoc_utils",
-  # "template"
-  "day-one"
+  "day-one",
 ]
