@@ -1,8 +1,11 @@
 //! Command line executable for running part one and part two
-use std::{fs::File, io::{BufReader, BufRead}};
+use std::{
+    fs::File,
+    io::{BufRead, BufReader},
+};
 
+use anyhow::{anyhow, Result};
 use clap::Parser;
-use anyhow::{Result, anyhow};
 
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
@@ -52,7 +55,7 @@ type VectorType = Game;
 enum RPC {
     Rock,
     Paper,
-    Scissors
+    Scissors,
 }
 impl RPC {
     fn try_parse(input: &str) -> Result<Self> {
@@ -64,7 +67,7 @@ impl RPC {
             "X" => Ok(Rock),
             "Y" => Ok(Paper),
             "Z" => Ok(Scissors),
-            _ => Err(anyhow!("Bad input"))
+            _ => Err(anyhow!("Bad input")),
         }
     }
 
@@ -90,7 +93,7 @@ impl RPC {
         match self {
             Self::Rock => Self::Paper,
             Self::Paper => Self::Scissors,
-            Self::Scissors => Self::Rock
+            Self::Scissors => Self::Rock,
         }
     }
 }
@@ -98,7 +101,7 @@ impl RPC {
 enum Strategy {
     Win,
     Lose,
-    Tie
+    Tie,
 }
 impl Strategy {
     fn from_xyz(input: &str) -> Self {
@@ -106,24 +109,21 @@ impl Strategy {
             "X" => Strategy::Lose,
             "Y" => Strategy::Tie,
             "Z" => Strategy::Win,
-            _ => Strategy::Win
+            _ => Strategy::Win,
         }
     }
 }
 
 struct Game {
     you: RPC,
-    opponent: RPC
+    opponent: RPC,
 }
 impl Game {
     fn from_line(input: &str) -> Self {
         let mut inputs = input.split_whitespace();
         let opponent = RPC::try_parse(inputs.next().unwrap()).unwrap();
         let you = RPC::try_parse(inputs.next().unwrap()).unwrap();
-        Self {
-            you,
-            opponent
-        }
+        Self { you, opponent }
     }
 
     fn from_strategy(input: &str) -> Self {
@@ -134,11 +134,9 @@ impl Game {
         let you = match strategy {
             Strategy::Win => opponent.gen_loss(),
             Strategy::Tie => opponent.gen_tie(),
-            Strategy::Lose => opponent.gen_win()
+            Strategy::Lose => opponent.gen_win(),
         };
-        Self {
-            you, opponent
-        }
+        Self { you, opponent }
     }
 
     fn score(&self) -> ReturnType {
@@ -147,26 +145,30 @@ impl Game {
                 RPC::Rock => 3,
                 RPC::Paper => 0,
                 RPC::Scissors => 6,
-            }
+            },
             RPC::Paper => match self.opponent {
                 RPC::Rock => 6,
                 RPC::Paper => 3,
                 RPC::Scissors => 0,
-
-            }
+            },
             RPC::Scissors => match self.opponent {
                 RPC::Rock => 0,
                 RPC::Paper => 6,
                 RPC::Scissors => 3,
-            }
+            },
         };
         opposition_score + self.you.get_points()
     }
 }
 
 // TODO Implement this
-fn parse_input<F: Fn(&str) -> Game>(file: BufReader<File>, generation_function: F) -> Vec<VectorType> {
-    file.lines().map(|x| generation_function(x.unwrap().as_str())).collect()
+fn parse_input<F: Fn(&str) -> Game>(
+    file: BufReader<File>,
+    generation_function: F,
+) -> Vec<VectorType> {
+    file.lines()
+        .map(|x| generation_function(x.unwrap().as_str()))
+        .collect()
 }
 
 // TODO Implement this
