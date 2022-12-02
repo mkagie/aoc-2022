@@ -34,12 +34,12 @@ fn main() {
 }
 
 fn part_one(file: BufReader<File>) -> ReturnType {
-    let input = parse_input(file);
+    let input = parse_input(file, Game::from_line);
     part_one_internal(input)
 }
 
 fn part_two(file: BufReader<File>) -> ReturnType {
-    let input = parse_input_two(file);
+    let input = parse_input(file, Game::from_strategy);
     part_two_internal(input)
 }
 
@@ -179,12 +179,8 @@ impl Game {
 }
 
 // TODO Implement this
-fn parse_input(file: BufReader<File>) -> Vec<VectorType> {
-    file.lines().map(|x| Game::from_line(x.unwrap().as_str())).collect()
-}
-
-fn parse_input_two(file: BufReader<File>) -> Vec<VectorType> {
-    file.lines().map(|x| Game::from_strategy(x.unwrap().as_str())).collect()
+fn parse_input<F: Fn(&str) -> Game>(file: BufReader<File>, generation_function: F) -> Vec<VectorType> {
+    file.lines().map(|x| generation_function(x.unwrap().as_str())).collect()
 }
 
 // TODO Implement this
