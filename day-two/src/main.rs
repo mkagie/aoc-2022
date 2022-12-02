@@ -2,6 +2,7 @@
 use std::{fs::File, io::{BufReader, BufRead}};
 
 use clap::Parser;
+use anyhow::{Result, anyhow};
 
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
@@ -54,31 +55,16 @@ enum RPC {
     Scissors
 }
 impl RPC {
-    fn from_abc(input: &str) -> Self {
+    fn try_parse(input: &str) -> Result<Self> {
         use RPC::*;
         match input {
-            "A" => Rock,
-            "B" => Paper,
-            "C" => Scissors,
-            // Hack
-            _ => {
-                println!("BAD");
-                Rock
-            }
-        }
-    }
-
-    fn from_xyz(input: &str) -> Self {
-        use RPC::*;
-        match input {
-            "X" => Rock,
-            "Y" => Paper,
-            "Z" => Scissors,
-            // Hack
-            _ => {
-                println!("BAD");
-                Rock
-            }
+            "A" => Ok(Rock),
+            "B" => Ok(Paper),
+            "C" => Ok(Scissors),
+            "X" => Ok(Rock),
+            "Y" => Ok(Paper),
+            "Z" => Ok(Scissors),
+            _ => Err(anyhow!("Bad input"))
         }
     }
 
@@ -132,8 +118,8 @@ struct Game {
 impl Game {
     fn from_line(input: &str) -> Self {
         let mut inputs = input.split_whitespace();
-        let opponent = RPC::from_abc(inputs.next().unwrap());
-        let you = RPC::from_xyz(inputs.next().unwrap());
+        let opponent = RPC::try_parse(inputs.next().unwrap()).unwrap();
+        let you = RPC::try_parse(inputs.next().unwrap()).unwrap();
         Self {
             you,
             opponent
@@ -143,7 +129,7 @@ impl Game {
     fn from_strategy(input: &str) -> Self {
         let mut inputs = input.split_whitespace();
 
-        let opponent = RPC::from_abc(inputs.next().unwrap());
+        let opponent = RPC::try_parse(inputs.next().unwrap()).unwrap();
         let strategy = Strategy::from_xyz(inputs.next().unwrap());
         let you = match strategy {
             Strategy::Win => opponent.gen_loss(),
