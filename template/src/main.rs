@@ -50,7 +50,7 @@ fn parse_input<F, T>(file: BufReader<File>, f: F) -> Vec<T>
 where
     F: Fn(&str) -> T,
 {
-    file.lines().map(|x| f(x.unwrap())).collect()
+    file.lines().map(|x| f(x.unwrap().as_str())).collect()
 }
 
 // TODO -- Update this with the return type
@@ -64,7 +64,7 @@ fn map_one(input: &str) -> VectorType {
 }
 
 /// Map a line to a VectorType
-fn map_two(input: &str) -> VectorType {
+fn map_two(input: &str) -> VectorType2 {
     todo!()
 }
 

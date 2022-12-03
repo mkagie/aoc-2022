@@ -38,18 +38,26 @@ fn main() {
 }
 
 fn part_one(file: BufReader<File>) -> ReturnType {
-    let input = parse_input(file);
+    let input = parse_input(file, map_one);
     part_one_internal(input)
 }
 
 fn part_two(file: BufReader<File>) -> ReturnType {
-    let input = parse_input_two(file);
+    let input = parse_input(file, map_two);
     part_two_internal(input)
+}
+
+fn parse_input<F, T>(file: BufReader<File>, f: F) -> Vec<T>
+where
+    F: Fn(&str) -> T,
+{
+    file.lines().map(|x| f(x.unwrap().as_str())).collect()
 }
 
 // TODO -- Update this with the return type
 type ReturnType = u64;
 type VectorType = Bag;
+type VectorType2 = HashSet<char>;
 
 // Part1
 // - Parse per line
@@ -95,23 +103,18 @@ fn get_priority(val: &char) -> ReturnType {
     }
 }
 
-// TODO Implement this
-fn parse_input(file: BufReader<File>) -> Vec<VectorType> {
-    file.lines()
-        .map(|x| Bag::new(x.unwrap().as_str()))
-        .collect()
+/// Map a line to a VectorType
+fn map_one(input: &str) -> VectorType {
+    Bag::new(input)
 }
 
-fn parse_input_two(file: BufReader<File>) -> Vec<HashSet<char>> {
-    file.lines()
-        .map(|line| {
-            let mut hs = HashSet::new();
-            line.unwrap().chars().for_each(|c| {
-                let _ = hs.insert(c);
-            });
-            hs
-        })
-        .collect()
+/// Map a line to a VectorType
+fn map_two(input: &str) -> VectorType2 {
+    let mut hs = HashSet::new();
+    input.chars().for_each(|c| {
+        let _ = hs.insert(c);
+    });
+    hs
 }
 
 // TODO Implement this
@@ -120,7 +123,7 @@ fn part_one_internal(input: Vec<VectorType>) -> ReturnType {
 }
 
 // TODO Implement this
-fn part_two_internal(input: Vec<HashSet<char>>) -> ReturnType {
+fn part_two_internal(input: Vec<VectorType2>) -> ReturnType {
     input.chunks(3).fold(0, |mut acc, x| {
         // Find overlap in first two
         let mut temp = HashSet::new();
