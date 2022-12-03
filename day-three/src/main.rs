@@ -1,5 +1,9 @@
 //! Command line executable for running part one and part two
-use std::{fs::File, io::{BufReader, BufRead}, collections::HashSet};
+use std::{
+    collections::HashSet,
+    fs::File,
+    io::{BufRead, BufReader},
+};
 
 use clap::Parser;
 
@@ -53,9 +57,9 @@ type VectorType = Bag;
 // - Find the items that are in both
 // - Count the scores
 
-struct Bag{
+struct Bag {
     comp1: HashSet<char>,
-    comp2: HashSet<char>
+    comp2: HashSet<char>,
 }
 impl Bag {
     fn new(line: &str) -> Self {
@@ -71,9 +75,7 @@ impl Bag {
                 comp2.insert(c);
             }
         }
-        Self {
-          comp1, comp2  
-        }
+        Self { comp1, comp2 }
     }
 
     fn get_score(&self) -> ReturnType {
@@ -95,15 +97,21 @@ fn get_priority(val: &char) -> ReturnType {
 
 // TODO Implement this
 fn parse_input(file: BufReader<File>) -> Vec<VectorType> {
-    file.lines().map(|x| Bag::new(x.unwrap().as_str())).collect()
+    file.lines()
+        .map(|x| Bag::new(x.unwrap().as_str()))
+        .collect()
 }
 
 fn parse_input_two(file: BufReader<File>) -> Vec<HashSet<char>> {
-    file.lines().map(|line|{
-        let mut hs = HashSet::new();
-        line.unwrap().chars().for_each(|c| {let _ = hs.insert(c);});
-        hs
-    }).collect()
+    file.lines()
+        .map(|line| {
+            let mut hs = HashSet::new();
+            line.unwrap().chars().for_each(|c| {
+                let _ = hs.insert(c);
+            });
+            hs
+        })
+        .collect()
 }
 
 // TODO Implement this
@@ -120,7 +128,6 @@ fn part_two_internal(input: Vec<HashSet<char>>) -> ReturnType {
             temp.insert(y.to_owned());
         }
         for z in x[2].intersection(&temp) {
-            println!("{:?}", z);
             acc += get_priority(z);
         }
         acc
