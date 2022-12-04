@@ -1,7 +1,8 @@
 //! Command line executable for running part one and part two
 use std::{
+    collections::HashSet,
     fs::File,
-    io::{BufRead, BufReader}, collections::HashSet,
+    io::{BufRead, BufReader},
 };
 
 use clap::Parser;
@@ -64,22 +65,24 @@ struct Assignment {
 }
 impl Assignment {
     fn new(input: &str) -> Self {
-        let mut ranges = input.split(",");
-        let mut one = ranges.next().unwrap().split("-");
+        let mut ranges = input.split(',');
+        let mut one = ranges.next().unwrap().split('-');
         let start0: u64 = one.next().unwrap().parse().unwrap();
         let end0: u64 = one.next().unwrap().parse().unwrap();
-        let mut two = ranges.next().unwrap().split("-");
+        let mut two = ranges.next().unwrap().split('-');
         let start1: u64 = two.next().unwrap().parse().unwrap();
         let end1: u64 = two.next().unwrap().parse().unwrap();
 
         let mut elf0 = HashSet::new();
-        (start0..=end0).into_iter().for_each(|val| {elf0.insert(val);});
+        (start0..=end0).into_iter().for_each(|val| {
+            elf0.insert(val);
+        });
         let mut elf1 = HashSet::new();
-        (start1..=end1).into_iter().for_each(|val| {elf1.insert(val);});
+        (start1..=end1).into_iter().for_each(|val| {
+            elf1.insert(val);
+        });
 
-        Self {
-            elf0, elf1
-        }
+        Self { elf0, elf1 }
     }
 
     fn is_subset(&self) -> bool {
@@ -103,12 +106,18 @@ fn map_two(input: &str) -> VectorType2 {
 
 // TODO Implement this
 fn part_one_internal(input: Vec<VectorType>) -> ReturnType {
-    input.iter().map(|assignment| assignment.is_subset() as ReturnType).sum()
+    input
+        .iter()
+        .map(|assignment| assignment.is_subset() as ReturnType)
+        .sum()
 }
 
 // TODO Implement this
 fn part_two_internal(input: Vec<VectorType2>) -> ReturnType {
-    input.iter().map(|assignment| assignment.overlap() as ReturnType).sum()
+    input
+        .iter()
+        .map(|assignment| assignment.overlap() as ReturnType)
+        .sum()
 }
 
 #[cfg(test)]
