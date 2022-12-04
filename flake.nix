@@ -10,11 +10,19 @@
       let
         pkgs = import nixpkgs { inherit system; };
         naersk-lib = pkgs.callPackage naersk { };
+        python = pkgs.python3.withPackages (p: with p; [
+          ipython
+          numpy
+          scipy
+          matplotlib
+          pandas
+        ]);
       in
       {
         defaultPackage = naersk-lib.buildPackage ./.;
         devShell = with pkgs; mkShell {
           buildInputs = [
+            # Rust
             cargo
             rustc
             rustfmt
@@ -22,6 +30,9 @@
             rustPackages.clippy
             rust-analyzer
             cargo-generate
+
+            # python
+            python
           ];
           RUST_SRC_PATH = rustPlatform.rustLibSrc;
         };
