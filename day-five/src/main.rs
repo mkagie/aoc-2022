@@ -57,7 +57,6 @@ where
 type ReturnType = Vec<char>;
 type VectorType = Instruction;
 
-
 fn get_crates() -> Vec<Vec<char>> {
     // The crates start off as backwards
     let mut crates = vec![
@@ -66,10 +65,10 @@ fn get_crates() -> Vec<Vec<char>> {
         vec!['R', 'G', 'L', 'C', 'M', 'P', 'F'],
         vec!['M', 'H', 'P', 'W', 'B', 'F', 'L'],
         vec!['Q', 'V', 'S', 'F', 'C', 'G'],
-        vec!['L', 'T', 'Q', 'M', 'Z', 'J', 'H', 'W'] ,
+        vec!['L', 'T', 'Q', 'M', 'Z', 'J', 'H', 'W'],
         vec!['V', 'B', 'S', 'F', 'H'],
         vec!['S', 'Z', 'J', 'F'],
-        vec!['T', 'B', 'H', 'F', 'P', 'D', 'C', 'M']
+        vec!['T', 'B', 'H', 'F', 'P', 'D', 'C', 'M'],
     ];
     // Make them correct
     crates.iter_mut().for_each(|c| c.reverse());
@@ -80,7 +79,7 @@ fn get_crates() -> Vec<Vec<char>> {
 struct Instruction {
     num: usize,
     from: usize,
-    to: usize
+    to: usize,
 }
 impl Instruction {
     fn new(input: &str) -> Self {
@@ -88,15 +87,13 @@ impl Instruction {
         let num = words.next().unwrap().parse().unwrap();
         let from = words.next().unwrap().parse().unwrap();
         let to = words.next().unwrap().parse().unwrap();
-        Self {
-            num, from, to
-        }
+        Self { num, from, to }
     }
 
-    fn apply(&self, crates: &mut[Vec<char>]) {
+    fn apply(&self, crates: &mut [Vec<char>]) {
         for _ in 0..self.num {
             // Grab the last crate from that crate
-            let val = crates[self.from-1].pop().unwrap();
+            let val = crates[self.from - 1].pop().unwrap();
             crates[self.to - 1].push(val);
         }
     }
@@ -104,11 +101,11 @@ impl Instruction {
     fn apply_sequential(&self, crates: &mut [Vec<char>]) {
         let mut v = Vec::new();
         for _ in 0..self.num {
-            v.push(crates[self.from-1].pop().unwrap());
+            v.push(crates[self.from - 1].pop().unwrap());
         }
         v.reverse();
         for val in v {
-            crates[self.to-1].push(val);
+            crates[self.to - 1].push(val);
         }
     }
 }
@@ -125,14 +122,17 @@ fn map_two(input: &str) -> VectorType {
 
 // TODO Implement this
 fn part_one_internal(input: Vec<VectorType>, mut crates: Vec<Vec<char>>) -> ReturnType {
-    input.iter().for_each(|instruction| instruction.apply(&mut crates));
+    input
+        .iter()
+        .for_each(|instruction| instruction.apply(&mut crates));
     crates.iter_mut().map(|c| c.pop().unwrap()).collect()
-
 }
 
 // TODO Implement this
 fn part_two_internal(input: Vec<VectorType>, mut crates: Vec<Vec<char>>) -> ReturnType {
-    input.iter().for_each(|instruction| instruction.apply_sequential(&mut crates));
+    input
+        .iter()
+        .for_each(|instruction| instruction.apply_sequential(&mut crates));
     crates.iter_mut().map(|c| c.pop().unwrap()).collect()
 }
 
@@ -141,11 +141,7 @@ mod tests {
     use super::*;
     #[test]
     fn test_one() {
-        let crates = vec![
-            vec!['Z', 'N'],
-            vec!['M', 'C', 'D'],
-            vec!['P']
-        ];
+        let crates = vec![vec!['Z', 'N'], vec!['M', 'C', 'D'], vec!['P']];
 
         let input = "move 1 from 2 to 1
 move 3 from 1 to 3
