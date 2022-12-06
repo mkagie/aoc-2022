@@ -1,7 +1,7 @@
 //! Command line executable for running part one and part two
 use std::{
     fs::File,
-    io::{BufRead, BufReader},
+    io::{BufRead, BufReader}, collections::HashSet,
 };
 
 use clap::Parser;
@@ -37,45 +37,55 @@ fn main() {
 }
 
 fn part_one(file: BufReader<File>) -> ReturnType {
-    let input = parse_input(file, map_one);
+    let input = parse_input(file);
     part_one_internal(input)
 }
 
 fn part_two(file: BufReader<File>) -> ReturnType {
-    let input = parse_input(file, map_two);
+    let input = parse_input(file);
     part_two_internal(input)
 }
 
-fn parse_input<F, T>(file: BufReader<File>, f: F) -> Vec<T>
-where
-    F: Fn(&str) -> T,
+fn parse_input(file: BufReader<File>) -> String
 {
-    file.lines().map(|x| f(x.unwrap().as_str())).collect()
+    file.lines().next().unwrap().unwrap()
 }
 
 // TODO -- Update this with the return type
-type ReturnType = u64;
-type VectorType = u32;
-type VectorType2 = u32;
+type ReturnType = usize;
 
-/// Map a line to a VectorType
-fn map_one(input: &str) -> VectorType {
-    todo!()
+// TODO Implement this
+fn part_one_internal(input: String) -> ReturnType {
+    let chars: Vec<char> = input.chars().collect();
+
+    for (idx, window) in chars.windows(4).enumerate() {
+        if is_all_unique(window) {
+            return idx + 4
+        }
+    }
+    0
 }
 
-/// Map a line to a VectorType
-fn map_two(input: &str) -> VectorType2 {
-    todo!()
+fn is_all_unique(input: &[char]) -> bool {
+    let mut hash = HashSet::new();
+    for c in input {
+        if !hash.insert(c) {
+            return false;
+        }
+    }
+    true
 }
 
 // TODO Implement this
-fn part_one_internal(input: Vec<VectorType>) -> ReturnType {
-    todo!()
-}
+fn part_two_internal(input: String) -> ReturnType {
+    let chars: Vec<char> = input.chars().collect();
 
-// TODO Implement this
-fn part_two_internal(input: Vec<VectorType2>) -> ReturnType {
-    todo!()
+    for (idx, window) in chars.windows(14).enumerate() {
+        if is_all_unique(window) {
+            return idx + 14
+        }
+    }
+    0
 }
 
 #[cfg(test)]
