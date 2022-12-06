@@ -19,7 +19,7 @@ jobs:
       - name: Linting package
         run: nix-shell --run "cargo fmt --check"
       - name: Clippy package
-        run: nix-shell --run "cargo clippy --all-targets --all-features -- -D warnings"
+        run: nix-shell --run "cargo clippy --all-targets --all-features --no-deps -- -D warnings"
   test:
     runs-on: ubuntu-latest
     steps:
