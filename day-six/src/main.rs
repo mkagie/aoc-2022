@@ -1,5 +1,7 @@
 //! Command line executable for running part one and part two
+use anyhow::{anyhow, Result};
 use std::{
+    collections::HashSet,
     fs::File,
     io::{BufRead, BufReader},
 };
@@ -46,40 +48,41 @@ fn part_two(file: BufReader<File>) -> ReturnType {
     part_two_internal(input)
 }
 
+fn parse_input(file: BufReader<File>) -> String {
+    file.lines().next().unwrap().unwrap()
+}
+
 // TODO -- Update this with the return type
-type ReturnType = u64;
-type VectorType = Vec<u64>;
+type ReturnType = usize;
 
 // TODO Implement this
-fn parse_input(file: BufReader<File>) -> Vec<VectorType> {
-    let input: Vec<String> = file.lines().map(|x| x.unwrap()).collect();
-    let mut elves: Vec<VectorType> = Vec::new();
-    let mut elf: VectorType = Vec::new();
-    for line in input {
-        if line.is_empty() {
-            elves.push(elf);
-            elf = Vec::new();
-        } else {
-            elf.push(line.parse().unwrap());
+fn part_one_internal(input: String) -> ReturnType {
+    find_first_unique(input, 4).unwrap()
+}
+
+fn part_two_internal(input: String) -> ReturnType {
+    find_first_unique(input, 14).unwrap()
+}
+
+fn find_first_unique(input: String, window_size: usize) -> Result<ReturnType> {
+    let chars: Vec<char> = input.chars().collect();
+
+    for (idx, window) in chars.windows(window_size).enumerate() {
+        if is_all_unique(window) {
+            return Ok(idx + window_size);
         }
     }
-    elves
+    Err(anyhow!("Could not find unique"))
 }
 
-// TODO Implement this
-fn part_one_internal(input: Vec<VectorType>) -> ReturnType {
-    input
-        .into_iter()
-        .map(|elf| elf.into_iter().sum())
-        .reduce(|greatest, val| if val > greatest { val } else { greatest })
-        .unwrap()
-}
-
-// TODO Implement this
-fn part_two_internal(input: Vec<VectorType>) -> ReturnType {
-    let mut calories: VectorType = input.into_iter().map(|elf| elf.into_iter().sum()).collect();
-    calories.sort();
-    calories.into_iter().rev().take(3).sum()
+fn is_all_unique(input: &[char]) -> bool {
+    let mut hash = HashSet::new();
+    for c in input {
+        if !hash.insert(c) {
+            return false;
+        }
+    }
+    true
 }
 
 #[cfg(test)]
