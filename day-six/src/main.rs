@@ -1,7 +1,9 @@
 //! Command line executable for running part one and part two
+use anyhow::{anyhow, Result};
 use std::{
+    collections::HashSet,
     fs::File,
-    io::{BufRead, BufReader}, collections::HashSet,
+    io::{BufRead, BufReader},
 };
 
 use clap::Parser;
@@ -46,8 +48,7 @@ fn part_two(file: BufReader<File>) -> ReturnType {
     part_two_internal(input)
 }
 
-fn parse_input(file: BufReader<File>) -> String
-{
+fn parse_input(file: BufReader<File>) -> String {
     file.lines().next().unwrap().unwrap()
 }
 
@@ -56,14 +57,22 @@ type ReturnType = usize;
 
 // TODO Implement this
 fn part_one_internal(input: String) -> ReturnType {
+    find_first_unique(input, 4).unwrap()
+}
+
+fn part_two_internal(input: String) -> ReturnType {
+    find_first_unique(input, 14).unwrap()
+}
+
+fn find_first_unique(input: String, window_size: usize) -> Result<ReturnType> {
     let chars: Vec<char> = input.chars().collect();
 
-    for (idx, window) in chars.windows(4).enumerate() {
+    for (idx, window) in chars.windows(window_size).enumerate() {
         if is_all_unique(window) {
-            return idx + 4
+            return Ok(idx + window_size);
         }
     }
-    0
+    Err(anyhow!("Could not find unique"))
 }
 
 fn is_all_unique(input: &[char]) -> bool {
@@ -74,18 +83,6 @@ fn is_all_unique(input: &[char]) -> bool {
         }
     }
     true
-}
-
-// TODO Implement this
-fn part_two_internal(input: String) -> ReturnType {
-    let chars: Vec<char> = input.chars().collect();
-
-    for (idx, window) in chars.windows(14).enumerate() {
-        if is_all_unique(window) {
-            return idx + 14
-        }
-    }
-    0
 }
 
 #[cfg(test)]
