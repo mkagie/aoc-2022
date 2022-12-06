@@ -1,5 +1,8 @@
 //! Command line executable for running part one and part two
-use std::{fs::File, io::{BufReader, BufRead}};
+use std::{
+    fs::File,
+    io::{BufRead, BufReader},
+};
 
 use clap::Parser;
 
@@ -47,7 +50,6 @@ fn part_two(file: BufReader<File>) -> ReturnType {
 type ReturnType = u64;
 type VectorType = Vec<u64>;
 
-
 // TODO Implement this
 fn parse_input(file: BufReader<File>) -> Vec<VectorType> {
     let input: Vec<String> = file.lines().map(|x| x.unwrap()).collect();
@@ -75,9 +77,7 @@ fn part_one_internal(input: Vec<VectorType>) -> ReturnType {
 
 // TODO Implement this
 fn part_two_internal(input: Vec<VectorType>) -> ReturnType {
-    let mut calories: VectorType  = input
-        .into_iter()
-        .map(|elf| elf.into_iter().sum()).collect();
+    let mut calories: VectorType = input.into_iter().map(|elf| elf.into_iter().sum()).collect();
     calories.sort();
     calories.into_iter().rev().take(3).sum()
 }
