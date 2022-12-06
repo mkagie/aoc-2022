@@ -11,3 +11,19 @@ jobs:
       - uses: cachix/install-nix-action@v12
       - name: Building package
         run: nix-build . -A defaultPackage.x86_64-linux
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: cachix/install-nix-action@v12
+      - name: Linting package
+        run: nix-shell --run "cargo fmt --check"
+      - name: Clippy package
+        run: nix-shell --run "cargo clippy --all-targets --all-features -- -D warnings"
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: cachix/install-nix-action@v12
+      - name: Test package
+        run: nix-shell --run "cargo test"
