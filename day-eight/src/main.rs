@@ -77,13 +77,13 @@ fn part_one_internal(input: Vec<VectorType>) -> ReturnType {
     let mut n_visible = 0;
     for row_idx in 0..n_rows {
         for col_idx in 0..n_cols {
-            let val = arr.get((row_idx, col_idx)).unwrap().clone();
+            let val = *arr.get((row_idx, col_idx)).unwrap();
 
             // Check the north slice
-            let north = arr.slice(s![0..row_idx, col_idx]).iter().max().map(|x| x.clone()).unwrap_or(-1);
-            let south = arr.slice(s![row_idx+1.., col_idx]).iter().max().map(|x| x.clone()).unwrap_or(-1);
-            let east = arr.slice(s![row_idx, 0..col_idx]).iter().max().map(|x| x.clone()).unwrap_or(-1);
-            let west = arr.slice(s![row_idx, col_idx+1..]).iter().max().map(|x| x.clone()).unwrap_or(-1);
+            let north = arr.slice(s![0..row_idx, col_idx]).iter().max().copied().unwrap_or(-1);
+            let south = arr.slice(s![row_idx+1.., col_idx]).iter().max().copied().unwrap_or(-1);
+            let east = arr.slice(s![row_idx, 0..col_idx]).iter().max().copied().unwrap_or(-1);
+            let west = arr.slice(s![row_idx, col_idx+1..]).iter().max().copied().unwrap_or(-1);
 
             if north < val || south < val || east < val || west < val {
                 n_visible += 1;
@@ -101,7 +101,7 @@ fn part_two_internal(input: Vec<VectorType>) -> ReturnType {
     let mut highest_score = -1;
     for row_idx in 0..n_rows {
         for col_idx in 0..n_cols {
-            let val = arr.get((row_idx, col_idx)).unwrap().clone();
+            let val = *arr.get((row_idx, col_idx)).unwrap();
 
             // Check the north slice
             let north_view = arr.slice(s![0..row_idx, col_idx]).iter().rev().enumerate().find_map(|(idx, v)| if v >= &val { Some(idx as ReturnType)} else {None}).unwrap_or(row_idx as i64 - 1) + 1;
