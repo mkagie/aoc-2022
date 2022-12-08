@@ -59,7 +59,6 @@ where
 // TODO -- Update this with the return type
 type ReturnType = usize;
 type VectorType = String;
-type VectorType2 = String;
 
 #[derive(Debug, Clone)]
 struct LocalFile {
@@ -84,7 +83,7 @@ impl LocalFile {
 struct Directory {
     name: String,
     files: Vec<LocalFile>,
-    pub directory_data_size: usize, // Ignore directories for now, as that is going to be a new node
+    pub directory_data_size: usize,
 }
 impl Directory {
     fn try_new(input: &str) -> Result<Self> {
@@ -154,7 +153,7 @@ fn map_one(input: &str) -> VectorType {
 }
 
 /// Map a line to a VectorType
-fn map_two(input: &str) -> VectorType2 {
+fn map_two(input: &str) -> VectorType {
     input.to_string()
 }
 
@@ -200,10 +199,7 @@ fn build_tree(input: Vec<VectorType>) -> Tree<Directory> {
     tree
 }
 
-// TODO Implement this
-fn part_one_internal(input: Vec<VectorType>) -> ReturnType {
-    let mut tree = build_tree(input);
-    // Starts top to bottom
+fn populate_tree(tree: &mut Tree<Directory>) {
     let mut node_ids: Vec<NodeId> = tree
         .traverse_level_order_ids(tree.root_node_id().unwrap())
         .unwrap()
@@ -230,7 +226,12 @@ fn part_one_internal(input: Vec<VectorType>) -> ReturnType {
                 .add_sizes_from_below(size);
         }
     }
+}
 
+// TODO Implement this
+fn part_one_internal(input: Vec<VectorType>) -> ReturnType {
+    let mut tree = build_tree(input);
+    populate_tree(&mut tree);
     tree.traverse_level_order(tree.root_node_id().unwrap())
         .unwrap()
         .map(|node| node.data().get_full_size())
@@ -239,35 +240,9 @@ fn part_one_internal(input: Vec<VectorType>) -> ReturnType {
 }
 
 // TODO Implement this
-fn part_two_internal(input: Vec<VectorType2>) -> ReturnType {
+fn part_two_internal(input: Vec<VectorType>) -> ReturnType {
     let mut tree = build_tree(input);
-    // Starts top to bottom
-    let mut node_ids: Vec<NodeId> = tree
-        .traverse_level_order_ids(tree.root_node_id().unwrap())
-        .unwrap()
-        .collect();
-    // Now, make bottom to top
-    node_ids.reverse();
-    // Traverse and add sizes to the trees
-    for node_id in node_ids {
-        // Get Node
-        let node = tree.get(&node_id).unwrap();
-        let dir = node.data();
-        // Compute full size of this bad boy
-        let size = dir.get_file_sizes() + dir.directory_data_size;
-        // Add this to the parent
-        let parent_id = if node.parent().is_some() {
-            Some(node.parent().unwrap().clone())
-        } else {
-            None
-        };
-        if let Some(parent_id) = parent_id {
-            tree.get_mut(&parent_id)
-                .unwrap()
-                .data_mut()
-                .add_sizes_from_below(size);
-        }
-    }
+    populate_tree(&mut tree);
 
     // Get total amount of space being used
     let total_free_space = 70000000
@@ -276,11 +251,8 @@ fn part_two_internal(input: Vec<VectorType2>) -> ReturnType {
             .unwrap()
             .data()
             .get_full_size();
-    println!("{:?}", total_free_space);
     let needed_space_for_update = 30000000;
-    println!("{:?}", needed_space_for_update);
     let needed_space = needed_space_for_update - total_free_space;
-    println!("{:?}", needed_space);
 
     tree.traverse_level_order(tree.root_node_id().unwrap())
         .unwrap()
