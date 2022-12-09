@@ -125,7 +125,7 @@ impl Command {
         for _ in 0..self.amount {
             self.dir.apply(head);
             head.compute_tail_adjustment(tail);
-            tail_set.insert(tail.clone());
+            tail_set.insert(*tail);
         }
     }
 
@@ -133,10 +133,10 @@ impl Command {
         for _ in 0..self.amount {
             self.dir.apply(knots[0]);
             for idx in 0..knots.len() - 1 {
-                let head = knots[idx].clone();
+                let head = *knots[idx];
                 head.compute_tail_adjustment(knots[idx + 1]);
             }
-            tail_set.insert(knots[knots.len() - 1].clone());
+            tail_set.insert(*knots[knots.len() - 1]);
         }
     }
 }
@@ -164,20 +164,9 @@ fn part_one_internal(input: Vec<VectorType>) -> ReturnType {
 
 // TODO Implement this
 fn part_two_internal(input: Vec<VectorType>) -> ReturnType {
-    let mut knot0 = Position::default();
-    let mut knot1 = Position::default();
-    let mut knot2 = Position::default();
-    let mut knot3 = Position::default();
-    let mut knot4 = Position::default();
-    let mut knot5 = Position::default();
-    let mut knot6 = Position::default();
-    let mut knot7 = Position::default();
-    let mut knot8 = Position::default();
-    let mut knot9 = Position::default();
-    let mut knots = vec![
-        &mut knot0, &mut knot1, &mut knot2, &mut knot3, &mut knot4, &mut knot5, &mut knot6,
-        &mut knot7, &mut knot8, &mut knot9,
-    ];
+    let mut knots_objs = vec![Position::default(); 10];
+    let mut knots: Vec<&mut Position> = knots_objs.iter_mut().collect();
+
 
     let mut tail_set = HashSet::new();
     input
