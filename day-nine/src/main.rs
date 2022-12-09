@@ -167,7 +167,6 @@ fn part_two_internal(input: Vec<VectorType>) -> ReturnType {
     let mut knots_objs = vec![Position::default(); 10];
     let mut knots: Vec<&mut Position> = knots_objs.iter_mut().collect();
 
-
     let mut tail_set = HashSet::new();
     input
         .iter()
