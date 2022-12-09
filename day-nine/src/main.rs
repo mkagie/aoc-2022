@@ -1,7 +1,8 @@
 //! Command line executable for running part one and part two
 use std::{
+    collections::HashSet,
     fs::File,
-    io::{BufRead, BufReader}, collections::HashSet,
+    io::{BufRead, BufReader},
 };
 
 use clap::Parser;
@@ -60,7 +61,7 @@ type VectorType = Command;
 #[derive(Debug, Default, PartialEq, Eq, Hash, Clone, Copy)]
 struct Position {
     row: i64,
-    col: i64
+    col: i64,
 }
 impl Position {
     fn compute_tail_adjustment(&self, tail: &mut Self) {
@@ -87,10 +88,10 @@ enum Direction {
     L,
     R,
     U,
-    D
+    D,
 }
 impl Direction {
-    fn apply(&self, head: &mut Position,) {
+    fn apply(&self, head: &mut Position) {
         match self {
             Self::L => head.col -= 1,
             Self::R => head.col += 1,
@@ -102,7 +103,7 @@ impl Direction {
 
 struct Command {
     dir: Direction,
-    amount: usize
+    amount: usize,
 }
 impl Command {
     fn from_input(input: &str) -> Self {
@@ -112,15 +113,12 @@ impl Command {
             "R" => Direction::R,
             "U" => Direction::U,
             "D" => Direction::D,
-            _ => panic!("This bad")
+            _ => panic!("This bad"),
         };
 
         let amount = words.next().unwrap().parse().unwrap();
 
-        Self {
-            dir,
-            amount
-        }
+        Self { dir, amount }
     }
 
     fn apply(&self, head: &mut Position, tail: &mut Position, tail_set: &mut HashSet<Position>) {
@@ -158,7 +156,9 @@ fn part_one_internal(input: Vec<VectorType>) -> ReturnType {
     let mut head = Position::default();
     let mut tail = Position::default();
     let mut tail_set = HashSet::new();
-    input.iter().for_each(|cmd| cmd.apply(&mut head, &mut tail, &mut tail_set));
+    input
+        .iter()
+        .for_each(|cmd| cmd.apply(&mut head, &mut tail, &mut tail_set));
     tail_set.len()
 }
 
@@ -174,10 +174,15 @@ fn part_two_internal(input: Vec<VectorType>) -> ReturnType {
     let mut knot7 = Position::default();
     let mut knot8 = Position::default();
     let mut knot9 = Position::default();
-    let mut knots = vec![&mut knot0, &mut knot1, &mut knot2, &mut knot3, &mut knot4, &mut knot5, &mut knot6, &mut knot7, &mut knot8, &mut knot9];
+    let mut knots = vec![
+        &mut knot0, &mut knot1, &mut knot2, &mut knot3, &mut knot4, &mut knot5, &mut knot6,
+        &mut knot7, &mut knot8, &mut knot9,
+    ];
 
     let mut tail_set = HashSet::new();
-    input.iter().for_each(|cmd| cmd.apply_to_vec(&mut knots, &mut tail_set));
+    input
+        .iter()
+        .for_each(|cmd| cmd.apply_to_vec(&mut knots, &mut tail_set));
     tail_set.len()
 }
 
@@ -198,7 +203,10 @@ R 2"
 
     #[test]
     fn test_one() {
-        let input: Vec<VectorType> = input().lines().map(|line| Command::from_input(line)).collect();
+        let input: Vec<VectorType> = input()
+            .lines()
+            .map(|line| Command::from_input(line))
+            .collect();
         assert_eq!(part_one_internal(input), 13);
     }
 
