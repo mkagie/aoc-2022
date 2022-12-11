@@ -63,18 +63,18 @@ type VectorType2 = Instruction;
 #[derive(Clone, Debug)]
 enum Instruction {
     NoOp,
-    AddX {
-        amount: i64,
-        cycle_num: usize
-    }
+    AddX { amount: i64, cycle_num: usize },
 }
 impl Instruction {
     fn from_line(input: &str) -> Self {
         let mut words = input.split_whitespace();
         match words.next().unwrap() {
             "noop" => Self::NoOp,
-            "addx" => Self::AddX{ amount: words.next().unwrap().parse().unwrap(), cycle_num: 2 },
-            _ => panic!("Not valid")
+            "addx" => Self::AddX {
+                amount: words.next().unwrap().parse().unwrap(),
+                cycle_num: 2,
+            },
+            _ => panic!("Not valid"),
         }
     }
 
@@ -89,12 +89,9 @@ impl Instruction {
 
     fn cycle(self, val: &mut i64) -> Option<Self> {
         match self {
-            Self::NoOp => {
-                None
-            },
+            Self::NoOp => None,
             Self::AddX { amount, cycle_num } => {
                 if cycle_num == 0 {
-
                     *val += amount;
                     None
                 } else {
@@ -104,8 +101,6 @@ impl Instruction {
         }
     }
 }
-
-
 
 /// Map a line to a VectorType
 fn map_one(input: &str) -> VectorType {
@@ -139,22 +134,23 @@ fn part_one_internal(input: Vec<VectorType>) -> ReturnType {
 
 // TODO Implement this
 fn part_two_internal(input: Vec<VectorType2>) -> ReturnType {
-    let mut arr = Array::zeros((6, 40));
+    let mut arr = Array::ones((6, 40));
 
     let mut x: i64 = 1;
     let mut cmd = None;
     let mut cmds = input.into_iter();
-    for cycle_num in 1..235 {
+    for cycle_num in 1..241 {
         if cmd.is_none() {
             cmd = Some(cmds.next().unwrap());
         }
         let mut loc_cmd = cmd.take().unwrap();
         loc_cmd.start_cycle();
 
-        if (x - cycle_num).abs() < 2 {
-            let center_row = (cycle_num-1) / 40;
-            let center_col = (cycle_num-1) % 40;
-            *arr.get_mut((center_row as usize, center_col as usize)).unwrap() = 1;
+        if (x - (cycle_num - 1) % 40).abs() < 2 {
+            let center_row = (cycle_num - 1) / 40;
+            let center_col = (cycle_num - 1) % 40;
+            *arr.get_mut((center_row as usize, center_col as usize))
+                .unwrap() = 8;
         }
 
         cmd = loc_cmd.cycle(&mut x);
@@ -318,7 +314,10 @@ noop"
 
     #[test]
     fn test_one() {
-        let input: Vec<VectorType> = input().lines().map(|line| Instruction::from_line(line)).collect();
+        let input: Vec<VectorType> = input()
+            .lines()
+            .map(|line| Instruction::from_line(line))
+            .collect();
         let output = part_one_internal(input);
         assert_eq!(output, 13140);
     }
