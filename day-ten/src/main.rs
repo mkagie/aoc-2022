@@ -6,6 +6,8 @@ use std::{
 
 use clap::Parser;
 
+use ndarray::Array;
+
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
 struct Args {
@@ -54,24 +56,56 @@ where
 }
 
 // TODO -- Update this with the return type
-type ReturnType = u64;
+type ReturnType = i64;
 type VectorType = Instruction;
-type VectorType2 = u32;
+type VectorType2 = Instruction;
 
+#[derive(Clone, Debug)]
 enum Instruction {
     NoOp,
-    AddX(i64)
+    AddX {
+        amount: i64,
+        cycle_num: usize
+    }
 }
 impl Instruction {
     fn from_line(input: &str) -> Self {
         let mut words = input.split_whitespace();
         match words.next().unwrap() {
             "noop" => Self::NoOp,
-            "addx" => Self::AddX(words.next().unwrap().parse().unwrap()),
+            "addx" => Self::AddX{ amount: words.next().unwrap().parse().unwrap(), cycle_num: 2 },
             _ => panic!("Not valid")
         }
     }
+
+    fn start_cycle(&mut self) {
+        match self {
+            Self::NoOp => (),
+            Self::AddX { cycle_num, .. } => {
+                *cycle_num -= 1;
+            }
+        }
+    }
+
+    fn cycle(self, val: &mut i64) -> Option<Self> {
+        match self {
+            Self::NoOp => {
+                None
+            },
+            Self::AddX { amount, cycle_num } => {
+                if cycle_num == 0 {
+
+                    *val += amount;
+                    None
+                } else {
+                    Some(self)
+                }
+            }
+        }
+    }
 }
+
+
 
 /// Map a line to a VectorType
 fn map_one(input: &str) -> VectorType {
@@ -80,27 +114,214 @@ fn map_one(input: &str) -> VectorType {
 
 /// Map a line to a VectorType
 fn map_two(input: &str) -> VectorType2 {
-    todo!()
+    Instruction::from_line(input)
 }
 
 // TODO Implement this
 fn part_one_internal(input: Vec<VectorType>) -> ReturnType {
-    let mut cycle_num = 0;
-    let mut X = 1;
-    // For each cycle:
-    //   - If no current instruction, pull and execute
-    //   - If a current instruction, increment
+    let mut x = 1;
+    let mut sum = 0;
+    let mut cmd = None;
+    let mut cmds = input.into_iter();
+    for cycle_num in 1..221 {
+        if cmd.is_none() {
+            cmd = Some(cmds.next().unwrap());
+        }
+        let mut loc_cmd = cmd.take().unwrap();
+        loc_cmd.start_cycle();
+        if [20, 60, 100, 140, 180, 220].contains(&cycle_num) {
+            sum += x * cycle_num;
+        }
+        cmd = loc_cmd.cycle(&mut x);
+    }
+    sum
 }
 
 // TODO Implement this
 fn part_two_internal(input: Vec<VectorType2>) -> ReturnType {
-    todo!()
+    let mut arr = Array::zeros((6, 40));
+
+    let mut x: i64 = 1;
+    let mut cmd = None;
+    let mut cmds = input.into_iter();
+    for cycle_num in 1..235 {
+        if cmd.is_none() {
+            cmd = Some(cmds.next().unwrap());
+        }
+        let mut loc_cmd = cmd.take().unwrap();
+        loc_cmd.start_cycle();
+
+        if (x - cycle_num).abs() < 2 {
+            let center_row = (cycle_num-1) / 40;
+            let center_col = (cycle_num-1) % 40;
+            *arr.get_mut((center_row as usize, center_col as usize)).unwrap() = 1;
+        }
+
+        cmd = loc_cmd.cycle(&mut x);
+    }
+    println!("{:?}", arr);
+    0
 }
 
 #[cfg(test)]
 mod tests {
+    use super::*;
+
+    fn input<'a>() -> &'a str {
+        "addx 15
+addx -11
+addx 6
+addx -3
+addx 5
+addx -1
+addx -8
+addx 13
+addx 4
+noop
+addx -1
+addx 5
+addx -1
+addx 5
+addx -1
+addx 5
+addx -1
+addx 5
+addx -1
+addx -35
+addx 1
+addx 24
+addx -19
+addx 1
+addx 16
+addx -11
+noop
+noop
+addx 21
+addx -15
+noop
+noop
+addx -3
+addx 9
+addx 1
+addx -3
+addx 8
+addx 1
+addx 5
+noop
+noop
+noop
+noop
+noop
+addx -36
+noop
+addx 1
+addx 7
+noop
+noop
+noop
+addx 2
+addx 6
+noop
+noop
+noop
+noop
+noop
+addx 1
+noop
+noop
+addx 7
+addx 1
+noop
+addx -13
+addx 13
+addx 7
+noop
+addx 1
+addx -33
+noop
+noop
+noop
+addx 2
+noop
+noop
+noop
+addx 8
+noop
+addx -1
+addx 2
+addx 1
+noop
+addx 17
+addx -9
+addx 1
+addx 1
+addx -3
+addx 11
+noop
+noop
+addx 1
+noop
+addx 1
+noop
+noop
+addx -13
+addx -19
+addx 1
+addx 3
+addx 26
+addx -30
+addx 12
+addx -1
+addx 3
+addx 1
+noop
+noop
+noop
+addx -9
+addx 18
+addx 1
+addx 2
+noop
+noop
+addx 9
+noop
+noop
+noop
+addx -1
+addx 2
+addx -37
+addx 1
+addx 3
+noop
+addx 15
+addx -21
+addx 22
+addx -6
+addx 1
+noop
+addx 2
+addx 1
+noop
+addx -10
+noop
+noop
+addx 20
+addx 1
+addx 2
+addx 2
+addx -6
+addx -11
+noop
+noop
+noop"
+    }
+
     #[test]
-    fn test_one() {}
+    fn test_one() {
+        let input: Vec<VectorType> = input().lines().map(|line| Instruction::from_line(line)).collect();
+        let output = part_one_internal(input);
+        assert_eq!(output, 13140);
+    }
 
     #[test]
     fn test_two() {}
