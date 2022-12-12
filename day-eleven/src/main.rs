@@ -44,7 +44,7 @@ fn part_one(file: BufReader<File>) -> ReturnType {
 }
 
 fn part_two(file: BufReader<File>) -> ReturnType {
-    let input = parse_input(file);
+    let input = parse_input_two(file);
     part_two_internal(input)
 }
 
@@ -56,10 +56,18 @@ fn parse_input(file: BufReader<File>) -> Vec<Monkey> {
         .collect()
 }
 
+fn parse_input_two(file: BufReader<File>) -> Vec<Monkey2> {
+    let lines: Vec<String> = file.lines().map(|x| x.unwrap()).collect();
+    lines
+        .chunks(7)
+        .map(|lines| Monkey2::from_lines(lines.to_owned()))
+        .collect()
+}
+
 // TODO -- Update this with the return type
 type ReturnType = usize;
 type VectorType = Monkey;
-type VectorType2 = Monkey;
+type VectorType2 = Monkey2;
 
 struct Monkey {
     items: VecDeque<usize>,
@@ -147,6 +155,135 @@ impl Monkey {
     }
 }
 
+struct WorryLevel {
+    remainders: Vec<usize>,
+}
+static worry_level_values: [usize; 9] = [3, 5, 2, 13, 11, 17, 19, 7, 23];
+impl WorryLevel {
+    fn new(value: usize) -> Self {
+        let remainders = worry_level_values.iter().map(|x| value % x).collect();
+        Self { remainders }
+    }
+
+    fn add_value(&mut self, value: usize) {
+        for (diviser, remainder) in
+            std::iter::zip(worry_level_values.iter(), self.remainders.iter_mut())
+        {
+            *remainder = (*remainder + value % diviser) % diviser;
+        }
+    }
+
+    fn multiply_value(&mut self, value: usize) {
+        for (diviser, remainder) in
+            std::iter::zip(worry_level_values.iter(), self.remainders.iter_mut())
+        {
+            *remainder = (*remainder * value % diviser) % diviser;
+        }
+    }
+
+    fn square_value(&mut self) {
+        for (diviser, remainder) in
+            std::iter::zip(worry_level_values.iter(), self.remainders.iter_mut())
+        {
+            *remainder = (remainder.pow(2)) % diviser;
+        }
+    }
+
+    fn is_divisible(&self, val: usize) -> bool {
+        let idx = worry_level_values
+            .iter()
+            .position(|x| *x == val)
+            .expect(format!("Diviser isn't here: {:?}", val).as_str());
+        self.remainders[idx] == 0
+    }
+}
+
+enum Command {
+    Add(usize),
+    Multiply(usize),
+    Square,
+}
+
+struct Monkey2 {
+    items: VecDeque<WorryLevel>,
+    command: Command,
+    diviser: usize,
+    monkey_throw_idxs: (usize, usize),
+    n_items_counted: usize,
+}
+impl Monkey2 {
+    /// Take the whole monkey definition
+    fn from_lines(input: Vec<String>) -> Self {
+        // Example:
+        // Monkey 0:
+        //   Starting items: 79, 98
+        //   Operation: new = old * 19
+        //   Test: divisible by 23
+        //     If true: throw to monkey 2
+        //     If false: throw to monkey 3
+
+        // First line doesn't matter
+        let mut lines = input.into_iter().skip(1);
+
+        // Get starting items
+        let starting_items = lines.next().unwrap();
+        let items = starting_items.split(":").collect::<Vec<&str>>()[1]
+            .split(",")
+            .map(|x| WorryLevel::new(x.trim().parse().unwrap()))
+            .collect();
+
+        // Parse operation
+        let operation_line = lines.next().unwrap();
+        let operation_parts = operation_line.split('=').collect::<Vec<&str>>()[1]
+            .split_whitespace()
+            .collect::<Vec<&str>>();
+        let second_number = operation_parts[2].parse::<usize>();
+        let command = match (operation_parts[1], second_number) {
+            ("*", Ok(val)) => Command::Multiply(val),
+            ("*", Err(_)) => Command::Square,
+            ("+", Ok(val)) => Command::Add(val),
+            _ => panic!("Bad sign: {:?}", operation_parts[1]),
+        };
+
+        let diviser: usize = lines
+            .next()
+            .unwrap()
+            .split_whitespace()
+            .skip(3)
+            .next()
+            .unwrap()
+            .parse()
+            .unwrap();
+
+        // Monkey throw indeces
+        let true_idx: usize = lines
+            .next()
+            .unwrap()
+            .split_whitespace()
+            .last()
+            .unwrap()
+            .parse()
+            .unwrap();
+
+        let false_idx: usize = lines
+            .next()
+            .unwrap()
+            .split_whitespace()
+            .last()
+            .unwrap()
+            .parse()
+            .unwrap();
+
+        Self {
+            items,
+            command,
+            diviser,
+            monkey_throw_idxs: (true_idx, false_idx),
+            n_items_counted: 0,
+        }
+    }
+}
+
 // TODO Implement this
 fn part_one_internal(monkeys: Vec<VectorType>) -> ReturnType {
     // let mut mut_ref_monkeys: Vec<&mut Monkey> = monkeys.iter_mut().collect();
@@ -180,15 +317,102 @@ fn part_one_internal(monkeys: Vec<VectorType>) -> ReturnType {
 }
 
 // TODO Implement this
-fn part_two_internal(input: Vec<VectorType2>) -> ReturnType {
-    todo!()
+fn part_two_internal(monkeys: Vec<VectorType2>) -> ReturnType {
+    // let mut mut_ref_monkeys: Vec<&mut Monkey> = monkeys.iter_mut().collect();
+    let monkeys: Vec<RefCell<Monkey2>> = monkeys.into_iter().map(|x| RefCell::new(x)).collect();
+
+    for _round in 0..10000 {
+        for monkey in monkeys.iter() {
+            let mut monkey = monkey.borrow_mut();
+            let diviser = monkey.diviser;
+            while !monkey.items.is_empty() {
+                let mut item = monkey.items.pop_front().unwrap();
+                // Apply the monkeys modifier
+                match monkey.command {
+                    Command::Add(val) => item.add_value(val),
+                    Command::Multiply(val) => item.multiply_value(val),
+                    Command::Square => item.square_value(),
+                }
+                // Determine if divisible by diviser
+                let mut monkey2 = if item.is_divisible(diviser) {
+                    monkeys.get(monkey.monkey_throw_idxs.0).unwrap()
+                } else {
+                    monkeys.get(monkey.monkey_throw_idxs.1).unwrap()
+                }
+                .borrow_mut();
+                monkey2.items.push_back(item);
+
+                monkey.n_items_counted += 1;
+            }
+        }
+        if [
+            1, 20, 200, 1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000, 10000,
+        ]
+        .contains(&(_round + 1))
+        {
+            let n_counts: Vec<usize> = monkeys.iter().map(|x| x.borrow().n_items_counted).collect();
+            println!("{:?}: {:?}", (_round + 1), n_counts);
+        }
+    }
+
+    let mut inspected_items: Vec<usize> =
+        monkeys.iter().map(|x| x.borrow().n_items_counted).collect();
+    inspected_items.sort();
+    inspected_items.reverse();
+    inspected_items[0] * inspected_items[1]
 }
+
+// Modulus math:
+// Addition -> add to remainder, do modulus
+// Multiplication -> multiply remainder, do modulus
+// Square -> square remainder, do modulus
 
 #[cfg(test)]
 mod tests {
+    use super::*;
+
+    fn input() -> &'static str {
+        "Monkey 0:
+  Starting items: 79, 98
+  Operation: new = old * 19
+  Test: divisible by 23
+    If true: throw to monkey 2
+    If false: throw to monkey 3
+
+Monkey 1:
+  Starting items: 54, 65, 75, 74
+  Operation: new = old + 6
+  Test: divisible by 19
+    If true: throw to monkey 2
+    If false: throw to monkey 0
+
+Monkey 2:
+  Starting items: 79, 60, 97
+  Operation: new = old * old
+  Test: divisible by 13
+    If true: throw to monkey 1
+    If false: throw to monkey 3
+
+Monkey 3:
+  Starting items: 74
+  Operation: new = old + 3
+  Test: divisible by 17
+    If true: throw to monkey 0
+    If false: throw to monkey 1
+
+"
+    }
+
     #[test]
     fn test_one() {}
 
     #[test]
-    fn test_two() {}
+    fn test_two() {
+        let lines: Vec<String> = input().lines().map(|x| x.to_string()).collect();
+        let monkeys = lines
+            .chunks(7)
+            .map(|lines| Monkey2::from_lines(lines.to_owned()))
+            .collect();
+        assert_eq!(part_two_internal(monkeys), 2713310158);
+    }
 }
