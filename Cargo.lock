@@ -77,6 +77,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "day-fifteen"
+version = "0.1.0"
+dependencies = [
+ "aoc_utils",
+ "clap",
+]
+
+[[package]]
 name = "day-five"
 version = "0.1.0"
 dependencies = [
