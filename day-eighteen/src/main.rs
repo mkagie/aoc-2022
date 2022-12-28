@@ -95,12 +95,10 @@ impl Droplet {
                 } else {
                     self.faces.ny.mark_blocked()
                 }
+            } else if self.z - other.z > 0 {
+                self.faces.pz.mark_blocked();
             } else {
-                if self.z - other.z > 0 {
-                    self.faces.pz.mark_blocked();
-                } else {
-                    self.faces.nz.mark_blocked();
-                }
+                self.faces.nz.mark_blocked();
             }
         }
     }
