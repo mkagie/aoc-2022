@@ -20,11 +20,18 @@
           rust-analyzer
           cargo-generate
         ];
+
+        python = pkgs.python3.withPackages (p: with p; [
+          numpy
+          scipy
+          matplotlib
+          opencv4
+        ]);
       in
       {
         defaultPackage = naersk-lib.buildPackage ./.;
         devShell = with pkgs; mkShell {
-          buildInputs = rust-packages;
+          buildInputs = rust-packages ++ [ python ];
           RUST_SRC_PATH = rustPlatform.rustLibSrc;
         };
 
