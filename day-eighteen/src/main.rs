@@ -1,10 +1,12 @@
 //! Command line executable for running part one and part two
 use std::{
+    collections::HashSet,
     fs::File,
     io::{BufRead, BufReader},
 };
 
 use clap::Parser;
+use rand::prelude::*;
 
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
@@ -121,7 +123,7 @@ impl Droplet {
         ) && self.x > min_x
             && self.x < max_x
         {
-            println!("Marking {:?} px as interior", self);
+            // println!("Marking {:?} px as interior", self);
             self.faces.px.mark_unblocked_interior();
         }
         if matches!(
@@ -130,7 +132,7 @@ impl Droplet {
         ) && self.x > min_x
             && self.x < max_x
         {
-            println!("Marking {:?} nx as interior", self);
+            // println!("Marking {:?} nx as interior", self);
             self.faces.nx.mark_unblocked_interior();
         }
         if matches!(
@@ -139,7 +141,7 @@ impl Droplet {
         ) && self.y > min_y
             && self.y < max_y
         {
-            println!("Marking {:?} py as interior", self);
+            // println!("Marking {:?} py as interior", self);
             self.faces.py.mark_unblocked_interior();
         }
         if matches!(
@@ -148,7 +150,7 @@ impl Droplet {
         ) && self.y > min_y
             && self.y < max_y
         {
-            println!("Marking {:?} ny as interior", self);
+            // println!("Marking {:?} ny as interior", self);
             self.faces.ny.mark_unblocked_interior();
         }
         if matches!(
@@ -157,7 +159,7 @@ impl Droplet {
         ) && self.z > min_z
             && self.z < max_z
         {
-            println!("Marking {:?} pz as interior", self);
+            // println!("Marking {:?} pz as interior", self);
             self.faces.pz.mark_unblocked_interior();
         }
         if matches!(
@@ -166,7 +168,7 @@ impl Droplet {
         ) && self.z > min_z
             && self.z < max_z
         {
-            println!("Marking {:?} nz as interior", self);
+            // println!("Marking {:?} nz as interior", self);
             self.faces.nz.mark_unblocked_interior();
         }
     }
@@ -287,11 +289,11 @@ fn part_two_internal(input: Vec<VectorType2>) -> ReturnType {
     let max_y = droplets.iter().map(|droplet| droplet.y).max().unwrap();
     let min_z = droplets.iter().map(|droplet| droplet.z).min().unwrap();
     let max_z = droplets.iter().map(|droplet| droplet.z).max().unwrap();
-    println!(
-        "{:?} - {:?}\t{:?} - {:?}\t{:?} - {:?}",
-        min_x, max_x, min_y, max_y, min_z, max_z
-    );
-    droplets
+    // println!(
+    //     "{:?} - {:?}\t{:?} - {:?}\t{:?} - {:?}",
+    //     min_x, max_x, min_y, max_y, min_z, max_z
+    // );
+    let ret = droplets
         .iter_mut()
         .map(|droplet| {
             for d in droplets_two.iter() {
@@ -302,7 +304,223 @@ fn part_two_internal(input: Vec<VectorType2>) -> ReturnType {
             droplet.check_if_unblocking_is_interior(min_x, max_x, min_y, max_y, min_z, max_z);
             droplet.count_unblocked_exterior()
         })
-        .sum()
+        .sum();
+
+    let mut positions = HashSet::new();
+    for droplet in droplets {
+        positions.insert((droplet.x, droplet.y, droplet.z));
+    }
+    let open_positions = do_random_walk(min_x, max_x, min_y, max_y, min_z, max_z, 10, 10, &positions);
+    // println!("{:?}", open_positions);
+    ret
+}
+
+// Random Walk Idea:
+// - Initiate a random walker at every point within the mins and maxes
+//   - If a cube exists there, kill the random walker
+// - For up to N steps, randomly move. After you move, check to see if you have hit the min or the
+//   max of any of the different ranges. Keep track of the cells that you have visited
+//   - If you have, kill the random walker
+// - Once you have run this, collect the random walkers and observe the HashSet of all the visited
+//   items
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+struct RandomWalker {
+    x: i64,
+    y: i64,
+    z: i64,
+    min_x: i64,
+    max_x: i64,
+    min_y: i64,
+    max_y: i64,
+    min_z: i64,
+    max_z: i64,
+    visited_locations: HashSet<(i64, i64, i64)>,
+}
+impl RandomWalker {
+    fn new(
+        x: i64,
+        y: i64,
+        z: i64,
+        min_x: i64,
+        max_x: i64,
+        min_y: i64,
+        max_y: i64,
+        min_z: i64,
+        max_z: i64,
+    ) -> Self {
+        let mut visited_locations = HashSet::new();
+        visited_locations.insert((x, y, z));
+        Self {
+            x,
+            y,
+            z,
+            min_x,
+            max_x,
+            min_y,
+            max_y,
+            min_z,
+            max_z,
+            visited_locations,
+        }
+    }
+
+    fn try_do_move(mut self, droplet_positions: &HashSet<(i64, i64, i64)>) -> Result<Self, ()> {
+        match Move::get_random_move() {
+            Move::Px => {
+                self.x += 1;
+                if self.x >= self.max_x {
+                    println!("{:?} is being removed", self);
+                    return Err(());
+                }
+                if self._try_do_move(droplet_positions) {
+                    Ok(self)
+                } else {
+                    self.x -= 1;
+                    Ok(self)
+                }
+            }
+            Move::Py => {
+                self.y += 1;
+                if self.y >= self.max_y {
+                    println!("{:?} is being removed", self);
+                    return Err(());
+                }
+                if self._try_do_move(droplet_positions) {
+                    Ok(self)
+                } else {
+                    self.y -= 1;
+                    Ok(self)
+                }
+            }
+            Move::Pz => {
+                self.z += 1;
+                if self.z >= self.max_z {
+                    println!("{:?} is being removed", self);
+                    return Err(());
+                }
+                if self._try_do_move(droplet_positions) {
+                    Ok(self)
+                } else {
+                    self.z -= 1;
+                    Ok(self)
+                }
+            }
+            Move::Nx => {
+                self.x -= 1;
+                if self.x <= self.min_x {
+                    // println!("{:?} is being removed", self);
+                    return Err(());
+                }
+                if self._try_do_move(droplet_positions) {
+                    Ok(self)
+                } else {
+                    self.x += 1;
+                    Ok(self)
+                }
+            }
+            Move::Ny => {
+                self.y -= 1;
+                if self.y <= self.min_y {
+                    // println!("{:?} is being removed", self);
+                    return Err(());
+                }
+                if self._try_do_move(droplet_positions) {
+                    Ok(self)
+                } else {
+                    self.y += 1;
+                    Ok(self)
+                }
+            }
+            Move::Nz => {
+                self.z -= 1;
+                if self.z <= self.min_z {
+                    // println!("{:?} is being removed", self);
+                    return Err(());
+                }
+                if self._try_do_move(droplet_positions) {
+                    Ok(self)
+                } else {
+                    self.z += 1;
+                    Ok(self)
+                }
+            }
+        }
+    }
+
+    fn _try_do_move(&mut self, droplet_positions: &HashSet<(i64, i64, i64)>) -> bool {
+        if !droplet_positions.contains(&(self.x, self.y, self.z)) {
+            self.visited_locations.insert((self.x, self.y, self.z));
+            true
+        } else {
+            false
+        }
+    }
+}
+
+fn do_random_walk(
+    min_x: i64,
+    max_x: i64,
+    min_y: i64,
+    max_y: i64,
+    min_z: i64,
+    max_z: i64,
+    n_walkers: usize,
+    n_iters: usize,
+    droplet_positions: &HashSet<(i64, i64, i64)>,
+) -> HashSet<(i64, i64, i64)> {
+    let mut walkers = Vec::new();
+    for x in min_x..= max_x {
+        for y in min_y..= max_y {
+            for z in min_z..= max_z {
+                for _ in 0..n_walkers {
+                    walkers.push(RandomWalker::new(
+                        x, y, z, min_x, max_x, min_y, max_y, min_z, max_z,
+                    ));
+                }
+            }
+        }
+    }
+    for _ in 0..n_iters {
+        walkers = walkers
+            .into_iter()
+            .filter_map(|walker| walker.try_do_move(droplet_positions).ok())
+            .collect();
+        println!("{:?}", walkers.len());
+    }
+
+    let mut locked_positions = HashSet::new();
+    for walker in walkers {
+        for position in walker.visited_locations {
+            locked_positions.insert(position);
+        }
+    }
+    locked_positions
+}
+
+#[derive(Debug, Clone)]
+enum Move {
+    Px,
+    Py,
+    Pz,
+    Nx,
+    Ny,
+    Nz,
+}
+impl Move {
+    fn get_random_move() -> Self {
+        let mut rng = thread_rng();
+        let val: u8 = rng.gen_range(0..6);
+        match val {
+            0 => Move::Px,
+            1 => Move::Py,
+            2 => Move::Pz,
+            3 => Move::Nx,
+            4 => Move::Ny,
+            5 => Move::Nz,
+            _ => unreachable!(),
+        }
+    }
 }
 
 #[cfg(test)]
@@ -340,4 +558,7 @@ mod tests {
 
         assert_eq!(part_two_internal(droplets), 58);
     }
+
+    #[test]
+    fn random_walk() {}
 }
