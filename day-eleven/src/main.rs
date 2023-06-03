@@ -319,7 +319,6 @@ fn part_one_internal(monkeys: Vec<VectorType>) -> ReturnType {
 
 // TODO Implement this
 fn part_two_internal(monkeys: Vec<VectorType2>) -> ReturnType {
-    // let mut mut_ref_monkeys: Vec<&mut Monkey> = monkeys.iter_mut().collect();
     let monkeys: Vec<RefCell<Monkey2>> = monkeys.into_iter().map(RefCell::new).collect();
 
     for _round in 0..10000 {
