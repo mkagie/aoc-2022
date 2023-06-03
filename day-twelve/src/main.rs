@@ -66,11 +66,11 @@ type VectorType = Vec<usize>;
 
 /// Map a line to a VectorType
 fn map_one(input: &str) -> VectorType {
-    input.chars().map(|c| convert_letter_to_number(c)).collect()
+    input.chars().map(convert_letter_to_number).collect()
 }
 
 fn convert_letter_to_number(c: char) -> usize {
-    if c >= 'a' && c <= 'z' {
+    if ('a'..='z').contains(&c) {
         c as usize - 'a' as usize + 1
     } else if c == 'S' {
         0
@@ -85,7 +85,7 @@ fn convert_letter_to_number(c: char) -> usize {
 
 /// Map a line to a VectorType
 fn map_two(input: &str) -> VectorType {
-    input.chars().map(|c| convert_letter_to_number(c)).collect()
+    input.chars().map(convert_letter_to_number).collect()
 }
 
 // Node is:
@@ -125,11 +125,10 @@ fn part_one_internal(input: Vec<VectorType>) -> ReturnType {
         .unwrap();
 
     // Create nodes
-    for row_idx in 0..n_rows {
+    for row in input.iter().take(n_rows) {
         let mut row_vec = Vec::new();
-        for col_idx in 0..n_cols {
-            let node = input[row_idx][col_idx];
-            row_vec.push(g.add_node(node));
+        for node in row.iter().take(n_cols) {
+            row_vec.push(g.add_node(*node));
         }
         nodes.push(row_vec);
     }
@@ -138,7 +137,7 @@ fn part_one_internal(input: Vec<VectorType>) -> ReturnType {
     for row_idx in 0..n_rows {
         for col_idx in 0..n_cols {
             let node_idx = nodes[row_idx][col_idx];
-            let node_weight = g.node_weight(node_idx).unwrap().clone();
+            let node_weight = *g.node_weight(node_idx).unwrap();
             // Try N
             if row_idx >= 1 {
                 if let Some(north_idx) = nodes.get(row_idx - 1).and_then(|row| row.get(col_idx)) {
@@ -199,14 +198,6 @@ fn part_two_internal(input: Vec<VectorType>) -> ReturnType {
     let n_cols = input[0].len();
 
     // Find Start -- 0
-    let start_idx = input
-        .iter()
-        .enumerate()
-        .map(|(row_idx, row)| (row_idx, row.iter().position(|x| *x == 0)))
-        .filter(|(_, col_idx)| col_idx.is_some())
-        .map(|(row_idx, col_idx)| (row_idx, col_idx.unwrap()))
-        .next()
-        .unwrap();
     let end_idx = input
         .iter()
         .enumerate()
@@ -217,11 +208,10 @@ fn part_two_internal(input: Vec<VectorType>) -> ReturnType {
         .unwrap();
 
     // Create nodes
-    for row_idx in 0..n_rows {
+    for row in input.iter().take(n_rows) {
         let mut row_vec = Vec::new();
-        for col_idx in 0..n_cols {
-            let node = input[row_idx][col_idx];
-            row_vec.push(g.add_node(node));
+        for node in row.iter().take(n_cols) {
+            row_vec.push(g.add_node(*node));
         }
         nodes.push(row_vec);
     }
@@ -230,7 +220,7 @@ fn part_two_internal(input: Vec<VectorType>) -> ReturnType {
     for row_idx in 0..n_rows {
         for col_idx in 0..n_cols {
             let node_idx = nodes[row_idx][col_idx];
-            let node_weight = g.node_weight(node_idx).unwrap().clone();
+            let node_weight = *g.node_weight(node_idx).unwrap();
             // Try N
             if row_idx >= 1 {
                 if let Some(north_idx) = nodes.get(row_idx - 1).and_then(|row| row.get(col_idx)) {
@@ -277,9 +267,8 @@ fn part_two_internal(input: Vec<VectorType>) -> ReturnType {
             node_row
                 .iter()
                 .enumerate()
-                .map(|(col_idx, node)| {
-                    // println!("Trying: {:?}, {:?}", row_idx, col_idx);
-                    let val = if *g.node_weight(*node).unwrap() == 1 {
+                .filter_map(|(col_idx, node)| {
+                    if *g.node_weight(*node).unwrap() == 1 {
                         astar(
                             &g,
                             *node,
@@ -304,13 +293,11 @@ fn part_two_internal(input: Vec<VectorType>) -> ReturnType {
                                 .unwrap()
                             },
                         )
-                        .and_then(|(steps, _)| Some(steps))
+                        .map(|(steps, _)| steps)
                     } else {
                         None
-                    };
-                    val
+                    }
                 })
-                .flatten()
                 .min()
                 .unwrap_or(usize::MAX)
         })
