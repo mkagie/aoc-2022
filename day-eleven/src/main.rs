@@ -69,6 +69,7 @@ type ReturnType = usize;
 type VectorType = Monkey;
 type VectorType2 = Monkey2;
 
+// TODO(mkagie) Could remove Monkey vs Monkey2 if I could figure out how to handle the divide by 3
 struct Monkey {
     items: VecDeque<usize>,
     operation: Box<dyn FnMut(usize) -> usize>,
@@ -92,8 +93,8 @@ impl Monkey {
 
         // Get starting items
         let starting_items = lines.next().unwrap();
-        let items: VecDeque<usize> = starting_items.split(":").collect::<Vec<&str>>()[1]
-            .split(",")
+        let items: VecDeque<usize> = starting_items.split(':').collect::<Vec<&str>>()[1]
+            .split(',')
             .map(|x| x.trim().parse().unwrap())
             .collect();
 
@@ -119,8 +120,7 @@ impl Monkey {
             .next()
             .unwrap()
             .split_whitespace()
-            .skip(3)
-            .next()
+            .nth(3)
             .unwrap()
             .parse()
             .unwrap();
@@ -158,16 +158,18 @@ impl Monkey {
 struct WorryLevel {
     remainders: Vec<usize>,
 }
-static worry_level_values: [usize; 9] = [3, 5, 2, 13, 11, 17, 19, 7, 23];
+// TODO(mkagie) Could look into parsing this from the file, rather than hardcoding statics
+// Added 23 to get test case to work (not needed for actual question)
+static WORRY_LEVEL_VALUES: [usize; 9] = [3, 5, 2, 13, 11, 17, 19, 7, 23];
 impl WorryLevel {
     fn new(value: usize) -> Self {
-        let remainders = worry_level_values.iter().map(|x| value % x).collect();
+        let remainders = WORRY_LEVEL_VALUES.iter().map(|x| value % x).collect();
         Self { remainders }
     }
 
     fn add_value(&mut self, value: usize) {
         for (diviser, remainder) in
-            std::iter::zip(worry_level_values.iter(), self.remainders.iter_mut())
+            std::iter::zip(WORRY_LEVEL_VALUES.iter(), self.remainders.iter_mut())
         {
             *remainder = (*remainder + value % diviser) % diviser;
         }
@@ -175,7 +177,7 @@ impl WorryLevel {
 
     fn multiply_value(&mut self, value: usize) {
         for (diviser, remainder) in
-            std::iter::zip(worry_level_values.iter(), self.remainders.iter_mut())
+            std::iter::zip(WORRY_LEVEL_VALUES.iter(), self.remainders.iter_mut())
         {
             *remainder = (*remainder * value % diviser) % diviser;
         }
@@ -183,17 +185,17 @@ impl WorryLevel {
 
     fn square_value(&mut self) {
         for (diviser, remainder) in
-            std::iter::zip(worry_level_values.iter(), self.remainders.iter_mut())
+            std::iter::zip(WORRY_LEVEL_VALUES.iter(), self.remainders.iter_mut())
         {
             *remainder = (remainder.pow(2)) % diviser;
         }
     }
 
     fn is_divisible(&self, val: usize) -> bool {
-        let idx = worry_level_values
+        let idx = WORRY_LEVEL_VALUES
             .iter()
             .position(|x| *x == val)
-            .expect(format!("Diviser isn't here: {:?}", val).as_str());
+            .unwrap_or_else(|| panic!("Diviser isn't here: {:?}", val));
         self.remainders[idx] == 0
     }
 }
@@ -227,8 +229,8 @@ impl Monkey2 {
 
         // Get starting items
         let starting_items = lines.next().unwrap();
-        let items = starting_items.split(":").collect::<Vec<&str>>()[1]
-            .split(",")
+        let items = starting_items.split(':').collect::<Vec<&str>>()[1]
+            .split(',')
             .map(|x| WorryLevel::new(x.trim().parse().unwrap()))
             .collect();
 
@@ -249,8 +251,7 @@ impl Monkey2 {
             .next()
             .unwrap()
             .split_whitespace()
-            .skip(3)
-            .next()
+            .nth(3)
             .unwrap()
             .parse()
             .unwrap();
@@ -287,7 +288,7 @@ impl Monkey2 {
 // TODO Implement this
 fn part_one_internal(monkeys: Vec<VectorType>) -> ReturnType {
     // let mut mut_ref_monkeys: Vec<&mut Monkey> = monkeys.iter_mut().collect();
-    let monkeys: Vec<RefCell<Monkey>> = monkeys.into_iter().map(|x| RefCell::new(x)).collect();
+    let monkeys: Vec<RefCell<Monkey>> = monkeys.into_iter().map(RefCell::new).collect();
 
     for _round in 0..20 {
         // let mut_ref_monkeys: Vec<&mut Monkey> = monkeys.iter_mut().collect();
@@ -319,7 +320,7 @@ fn part_one_internal(monkeys: Vec<VectorType>) -> ReturnType {
 // TODO Implement this
 fn part_two_internal(monkeys: Vec<VectorType2>) -> ReturnType {
     // let mut mut_ref_monkeys: Vec<&mut Monkey> = monkeys.iter_mut().collect();
-    let monkeys: Vec<RefCell<Monkey2>> = monkeys.into_iter().map(|x| RefCell::new(x)).collect();
+    let monkeys: Vec<RefCell<Monkey2>> = monkeys.into_iter().map(RefCell::new).collect();
 
     for _round in 0..10000 {
         for monkey in monkeys.iter() {
