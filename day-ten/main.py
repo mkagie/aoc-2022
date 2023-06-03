@@ -2,6 +2,7 @@
 from argparse import ArgumentParser
 import numpy as np
 
+
 def parse_args():
     parser = ArgumentParser()
     parser.add_argument("-i", "--input", type=str, default="input.txt")
@@ -31,7 +32,6 @@ def part_one(args):
         else:
             addx_cycle_count += 1
 
-
         # Do the middle part
         if cycle_num in [20, 60, 100, 140, 180, 220]:
             sum += x * cycle_num
@@ -58,7 +58,7 @@ def part_two(args):
     addx_cycle_count = 0
     x = 1
 
-    output = [] # Will eventually be an array
+    output = []  # Will eventually be an array
     for cycle_num in range(1, 241):
         if current_cmd is None:
             current_cmd = stripped_lines.pop(0)
@@ -69,7 +69,6 @@ def part_two(args):
             pass
         else:
             addx_cycle_count += 1
-
 
         # Do the middle part
         if abs(x - (cycle_num - 1) % 40) < 2:

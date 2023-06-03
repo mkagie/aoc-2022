@@ -26,6 +26,7 @@
           matplotlib
           numpy
           scipy
+          black
         ]);
       in
       {
