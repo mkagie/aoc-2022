@@ -30,9 +30,15 @@
       in
       {
         defaultPackage = naersk-lib.buildPackage ./.;
-        devShell = with pkgs; mkShell {
-          buildInputs = rust-packages ++ [ python ];
-          RUST_SRC_PATH = rustPlatform.rustLibSrc;
+        devShells = with pkgs; {
+          default = mkShell {
+            buildInputs = rust-packages;
+            RUST_SRC_PATH = rustPlatform.rustLibSrc;
+          };
+          python = mkShell {
+            buildInputs = [ python ];
+          };
         };
-      });
+      }
+    );
 }
